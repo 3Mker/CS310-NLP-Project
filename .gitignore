@@ -1,0 +1,7 @@
+# Ignore datasets
+face2_zh_json/
+ghostbuster-data/
+ghostbuster-data_reformed/
+
+# Ignore results folder
+results/

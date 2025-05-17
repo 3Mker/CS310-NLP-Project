@@ -52,23 +52,31 @@
 
 ```text
 Project/
-├─ data/
-│  ├─ english/
-│  │  ├─ raw/ghostbuster-data/
-│  │  └─ processed/ghostbuster-data_reformed/
-│  └─ chinese/face2_zh_json/
-│     ├─ generated/zh_qwen2/
-│     └─ human/zh_unicode/
-├─ src/
-│  ├─ supervised/        # 训练与评估脚本
-│  ├─ zero_shot/         # 零样本检测实现
-│  └─ utils/             # 数据处理与通用函数
-├─ notebooks/            # 数据探索与可视化
-├─ results/
-│  ├─ supervised/
-│  ├─ zero_shot/
-│  └─ figures/
-└─ Project_Overview.md   # 本文件
+├─ face2_zh_json/         # 中文 Qwen-2 数据集
+│  ├─ generated/          # 生成的文本
+│  │  └─ zh_qwen2/
+│  └─ human/              # 人工文本
+│     └─ zh_unicode/
+├─ ghostbuster-data/      # 原始 Ghostbuster 英文数据集
+│  ├─ essay/
+│  ├─ reuter/
+│  ├─ wp/
+│  └─ other/
+├─ ghostbuster-data_reformed/  # 重组后的 Ghostbuster 数据集
+│  ├─ essay/
+│  ├─ reuter/
+│  └─ wp/
+├─ results/               # 结果文件夹
+│  ├─ supervised/         # 监督式模型结果
+│  └─ zero_shot/          # 零样本检测结果
+├─ src/                   # 源代码
+│  ├─ supervised/         # 监督式训练与评估脚本
+│  ├─ zero_shot/          # 零样本检测实现
+│  └─ utils/              # 数据处理与通用函数
+├─ notebooks/             # 数据探索与可视化
+├─ README.md              # 项目说明文件
+├─ LICENSE                # 许可证
+└─ Project_Overview.md    # 项目概览
 ```
 
 ---

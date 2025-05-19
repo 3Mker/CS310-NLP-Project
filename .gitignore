@@ -5,3 +5,9 @@ ghostbuster-data_reformed/
 
 # Ignore results folder
 results/
+
+# Ignore local_model folder
+local_model/
+
+#Ignore gpt-who
+gpt-who/

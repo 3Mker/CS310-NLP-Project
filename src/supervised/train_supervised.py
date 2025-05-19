@@ -11,37 +11,50 @@ import torch
 from src.utils.util import preprocess_for_bert
 from src.utils.dataset import BertDataset
 
-def load_dataset(data_path):
+def load_dataset(data_path, data_type):
     """Load dataset from a given path and return texts and labels."""
     if not os.path.exists(data_path):
         raise FileNotFoundError(f"Dataset path {data_path} does not exist.")
     if 'face2_zh_json' in data_path:
-        return load_chinese_qwen2_dataset(data_path)
+        return load_chinese_qwen2_dataset(data_path, data_type)
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_path', type=str, default='face2_zh_json')
+    parser.add_argument('--data_type', type=str, default=['news','webnovel','wiki'])
     parser.add_argument('--output_dir', type=str, default='results/supervised')
     parser.add_argument('--model_name', type=str, default='bert-base-chinese')
     parser.add_argument('--epochs', type=int, default=10)
     parser.add_argument('--batch_size', type=int, default=16)
+    parser.add_argument('--if_local', type=bool, default=False)
     args = parser.parse_args()
+
+    string_data_type = ','.join(args.data_type)
+    string_data_path_and_type = os.path.join(args.data_path, string_data_type)
+
+    args.output_dir = os.path.join(args.output_dir, args.model_name, string_data_path_and_type)
 
     # print arguments
     print("Arguments:")
     print(f"Data path: {args.data_path}")
+    print(f"Data type: {args.data_type}")
     print(f"Output directory: {args.output_dir}")
     print(f"Model name: {args.model_name}")
     print(f"Epochs: {args.epochs}")
     print(f"Batch size: {args.batch_size}")
 
-    records = load_dataset(args.data_path)
+    records = load_dataset(args.data_path, args.data_type)
     print(f"Loaded {len(records)} records.")
 
     if args.model_name == 'bert-base-chinese':
 
-        tokenizer = AutoTokenizer.from_pretrained("bert-base-chinese")
-        model = BertForSequenceClassification.from_pretrained("bert-base-chinese", num_labels=2)
+        if args.if_local:
+            tokenizer = AutoTokenizer.from_pretrained("local_model")
+            model = BertForSequenceClassification.from_pretrained("local_model")
+        else:
+            tokenizer = AutoTokenizer.from_pretrained("bert-base-chinese")
+            model = BertForSequenceClassification.from_pretrained("bert-base-chinese", num_labels=2)
+        
         inputs, labels = preprocess_for_bert(records, tokenizer)
        
         # Split dataset; placeholder split 80/20

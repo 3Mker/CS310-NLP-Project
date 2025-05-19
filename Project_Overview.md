@@ -27,9 +27,10 @@
 
 3. 零样本检测方法
 
-   - 选择一种方法（Fast-DetectGPT、FourierGPT、GPT-who 等）。
+   - 选择GPT-who。
    - 实现或调用官方实现，对同一批文本进行零样本检测。
    - 评估同样的指标，并与监督式模型对比。
+   - 复现完成后可以把GPT2模型换为别的模型
 
 4. 域外泛化测试（OOD）
 
@@ -107,3 +108,10 @@ Project/
 - 结构：仅保留 `essay/`、`reuter/`、`wp/` 三个核心子集，统一命名与文件格式（建议 JSONL）。
 - 内容：每条记录包含 `text`、`label`（0=human, 1=LLM）、`domain` 字段。
 - 用途：简化监督式训练管道，快速加载与批处理。
+
+## 4. 环境相关说明
+
+### 4.1 环境路径问题
+
+- 要设置类似 `export PYTHONPATH=/home/liuj_lab/cse12213012/code/CS310-NLP-Project:$PYTHONPATH` 的才能正确识别路径
+- 如果是本地则类似 `export PYTHONPATH=/Users/3mker/Desktop/Sustech/Junior/NLP/Project:$PYTHONPATH`

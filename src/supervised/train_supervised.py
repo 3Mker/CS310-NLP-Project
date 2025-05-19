@@ -2,7 +2,7 @@ import argparse
 import os
 # os.environ["TOKENIZERS_PARALLELISM"] = "false"
 import json
-from src.utils.data_utils import load_chinese_qwen2_dataset
+from src.utils.data_utils import load_chinese_qwen2_dataset, load_english_ghostbuster_dataset
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
 from transformers import BertTokenizer, BertForSequenceClassification, Trainer, TrainingArguments
@@ -16,18 +16,25 @@ def load_dataset(data_path, data_type):
     if not os.path.exists(data_path):
         raise FileNotFoundError(f"Dataset path {data_path} does not exist.")
     if 'face2_zh_json' in data_path:
+        print(f"Loading Chinese Qwen-2 dataset from {data_path} for types {data_type}")
         return load_chinese_qwen2_dataset(data_path, data_type)
+    elif 'ghostbuster' in data_path:
+        print(f"Loading English Ghostbuster dataset from {data_path} for types {data_type}")
+        return load_english_ghostbuster_dataset(data_path, data_type)
+    else:
+        print(f"Error: Unsupported dataset path {data_path}.")
+        raise ValueError(f"Data type {data_type} not supported.")
     
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data_path', type=str, default='face2_zh_json')
-    parser.add_argument('--data_type', type=str, default=['news','webnovel','wiki'])
+    parser.add_argument('--data_path', type=str, default='ghostbuster-data') # 'ghostbuster-data'
+    parser.add_argument('--data_type', type=str, default=['essay','wp','reuter']) # ['essay','wp','reuter']  ['news','webnovel','wiki']
     parser.add_argument('--output_dir', type=str, default='results_train/supervised')
-    parser.add_argument('--model_name', type=str, default='bert-base-chinese')
+    parser.add_argument('--model_name', type=str, default='bert-base-chinese') # 'bert-base-uncased'
     parser.add_argument('--epochs', type=int, default=10)
     parser.add_argument('--batch_size', type=int, default=16)
-    parser.add_argument('--if_local', type=bool, default=False)
+    parser.add_argument('--if_local', type=bool, default=True)
     args = parser.parse_args()
 
     string_data_type = ','.join(args.data_type)
@@ -46,7 +53,10 @@ def main():
 
     records = load_dataset(args.data_path, args.data_type)
     print(f"Loaded {len(records)} records.")
-
+    print(records[0])
+    print(records[7000])
+    print(records[14000])
+    exit()
     if args.model_name == 'bert-base-chinese':
         model_path = 'local_model_Bert_Chinese'
         if args.if_local:
@@ -56,7 +66,6 @@ def main():
             tokenizer = AutoTokenizer.from_pretrained("bert-base-chinese")
             model = BertForSequenceClassification.from_pretrained("bert-base-chinese", num_labels=2)
         
-        inputs, labels = preprocess_for_bert(records, tokenizer)
     elif args.model_name == 'bert-base-uncased':  
         model_path = 'local_model_Bert_English'
         if args.if_local:

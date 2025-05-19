@@ -71,8 +71,97 @@ def load_chinese_qwen2_dataset(data_path, data_type):
         }
     return records
 
+def load_english_ghostbuster_dataset(data_path, data_type):
+    """Load English Ghostbuster dataset, returning texts and binary labels."""
+    prompts, results, labels = {}, {}, {}
+    new_id = 0
+    types = os.listdir(data_path)
+    for type in types:
+        if type not in data_type:
+            continue
+        if type != 'reuter':
+            type_path = os.path.join(data_path, type)
+            prompts_temp = {}
+            print(f"Loading {type} dataset from {type_path}...")
+            # process prompts first
+            for folder in os.listdir(type_path):
+                if 'prompts' in folder:
+                    folder_path = os.path.join(type_path, folder)
+                    for txt_file in os.listdir(folder_path):
+                        if txt_file.endswith('.txt'):
+                            txt_id = int(txt_file.split('.')[0])
+                            one_line = ''
+                            with open(os.path.join(folder_path, txt_file), encoding='utf-8') as f:
+                                lines = f.readlines()
+                                one_line = ''.join([line.strip() for line in lines])
+                            prompts_temp[txt_id] = one_line
 
-
+            for folder in os.listdir(type_path):
+                folder_path = os.path.join(type_path, folder)
+                if 'prompts' in folder:
+                    continue
+                elif 'human' in folder:
+                    for txt_file in os.listdir(folder_path):
+                        if txt_file.endswith('.txt'):
+                            txt_id = int(txt_file.split('.')[0])
+                            one_line = ''
+                            with open(os.path.join(folder_path, txt_file), encoding='utf-8') as f:
+                                lines = f.readlines()
+                                one_line = ''.join([line.strip() for line in lines])
+                            prompts[new_id] = prompts_temp[txt_id]
+                            results[new_id] = one_line
+                            labels[new_id] = 0
+                            new_id += 1
+                # ignore hidden folders
+                elif folder.startswith('.'):
+                    continue
+                else:
+                    for txt_file in os.listdir(folder_path):
+                        if txt_file.endswith('.txt'):
+                            txt_id = int(txt_file.split('.')[0])
+                            one_line = ''
+                            with open(os.path.join(folder_path, txt_file), encoding='utf-8') as f:
+                                lines = f.readlines()
+                                one_line = ''.join([line.strip() for line in lines])
+                            prompts[new_id] = prompts_temp[txt_id]
+                            results[new_id] = one_line
+                            labels[new_id] = 1
+                            new_id += 1
+        else:
+            # process reuter dataset
+            type_path = os.path.join(data_path, type)
+            print(f"Loading {type} dataset from {type_path}...")
+            for folder in os.listdir(type_path):
+                # no prompts in reuter dataset
+                folder_path = os.path.join(type_path, folder)
+                # ignore hidden folders
+                if folder.startswith('.'):
+                    continue
+                for name in os.listdir(folder_path):
+                    name_path = os.path.join(folder_path, name)
+                    for txt_file in os.listdir(name_path):
+                        if txt_file.endswith('.txt'):
+                            one_line = ''
+                            with open(os.path.join(name_path, txt_file), encoding='utf-8') as f:
+                                lines = f.readlines()
+                                one_line = ''.join([line.strip() for line in lines])
+                            prompts[new_id] = 'Reported by: ' + name + '.'
+                            results[new_id] = one_line
+                            if 'human' in folder:
+                                labels[new_id] = 0
+                            else:
+                                labels[new_id] = 1
+                            new_id += 1
+    # Combine prompts, results, and labels into a single dic
+    print(f"Loaded {new_id} records from {data_path}.")
+    records = {}
+    for i in range(new_id):
+        records[i] = {
+            'prompt': prompts[i],
+            'result': results[i],
+            'label': labels[i]
+        }
+    return records
 
 
 if __name__ == "__main__":

@@ -115,3 +115,33 @@ Project/
 
 - 要设置类似 `export PYTHONPATH=/home/liuj_lab/cse12213012/code/CS310-NLP-Project:$PYTHONPATH` 的才能正确识别路径
 - 如果是本地则类似 `export PYTHONPATH=/Users/3mker/Desktop/Sustech/Junior/NLP/Project:$PYTHONPATH`
+
+## 5. 运行相关参数
+
+### 5.1 data_path
+
+- 代表使用哪个数据集，可以选择"face2_zh_json"或"ghostbuster-data"
+
+### 5.2 data_type
+
+- 具体选择数据集中的那些类型的数据，比如face2_zh_json就有 ['news','webnovel' 'wiki'] 
+
+### 5.3 output_dir
+
+- 结果存储，不建议修改
+
+### 5.4 model_name
+
+- 用于选择模型，目前有‘bert-base-chinese' 和‘bert-base-uncased'两种选择
+
+### 5.5 epochs
+
+- 训练的轮数，默认是10
+
+### 5.6 batch_size
+
+- 每次训练的batch大小，默认是16
+
+### 5.7 if_local
+
+- 是否加载本地模型，推荐是使用本地

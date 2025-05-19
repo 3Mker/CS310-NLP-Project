@@ -7,7 +7,11 @@ ghostbuster-data_reformed/
 results/
 
 # Ignore local_model folder
-local_model/
+local_model_Bert_Chinese/
+local_model_Bert_English/
 
 #Ignore gpt-who
 gpt-who/
+
+#Ignore FourierGPT
+FourierGPT/

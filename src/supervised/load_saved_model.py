@@ -11,7 +11,7 @@ import torch
 from src.utils.util import preprocess_for_bert
 from src.utils.dataset import BertDataset
 
-local_model_path = "local_model"
+local_model_path = "local_model_Bert_Chinese"
 saved_model_path = "results_train/supervised/bert-base-chinese/face2_zh_json/news,webnovel,wiki"
 
 tokenizer = AutoTokenizer.from_pretrained(local_model_path)

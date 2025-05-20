@@ -69,6 +69,11 @@ def load_chinese_qwen2_dataset(data_path, data_type):
             'result': results[i],
             'label': labels[i]
         }
+    counter = 0
+    for i in range(new_id):
+        if records[i]['label'] == 0:
+            counter += 1
+    print(f"Loaded {counter} human records and {new_id - counter} generated records.")
     return records
 
 def load_english_ghostbuster_dataset(data_path, data_type):
@@ -161,6 +166,11 @@ def load_english_ghostbuster_dataset(data_path, data_type):
             'result': results[i],
             'label': labels[i]
         }
+    counter = 0
+    for i in range(new_id):
+        if records[i]['label'] == 0:
+            counter += 1
+    print(f"Loaded {counter} human records and {new_id - counter} generated records.")
     return records
 
 

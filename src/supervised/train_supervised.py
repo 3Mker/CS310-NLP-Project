@@ -10,6 +10,9 @@ from transformers import AutoTokenizer, AutoModelForMaskedLM
 import torch
 from src.utils.util import preprocess_for_bert
 from src.utils.dataset import BertDataset
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
 def load_dataset(data_path, data_type):
     """Load dataset from a given path and return texts and labels."""
@@ -29,7 +32,7 @@ def load_dataset(data_path, data_type):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_path', type=str, default='ghostbuster-data') # 'ghostbuster-data'
-    parser.add_argument('--data_type', type=str, default=['essay','wp','reuter']) # ['essay','wp','reuter']  ['news','webnovel','wiki']
+    parser.add_argument('--data_type', nargs='+', type=str, default=['essay','wp','reuter']) # ['essay','wp','reuter']  ['news','webnovel','wiki']
     parser.add_argument('--output_dir', type=str, default='results_train/supervised')
     parser.add_argument('--model_name', type=str, default='bert-base-chinese') # 'bert-base-uncased'
     parser.add_argument('--epochs', type=int, default=10)
@@ -53,10 +56,7 @@ def main():
 
     records = load_dataset(args.data_path, args.data_type)
     print(f"Loaded {len(records)} records.")
-    print(records[0])
-    print(records[7000])
-    print(records[14000])
-    exit()
+    
     if args.model_name == 'bert-base-chinese':
         model_path = 'local_model_Bert_Chinese'
         if args.if_local:
@@ -82,6 +82,17 @@ def main():
     # Split dataset; placeholder split 80/20
     train_enc, eval_enc, train_labels, eval_labels = train_test_split(inputs, labels, test_size=0.2, random_state=42)
     
+    #count 0 in eval_labels
+    count_0 = 0
+    count_1 = 0
+    for label in eval_labels:
+        if label == 0:
+            count_0 += 1
+        else:
+            count_1 += 1
+    print(f"Count of 0 in eval_labels: {count_0}")
+    print(f"Count of 1 in eval_labels: {count_1}")
+
     # Convert to PyTorch Dataset
     train_dataset = BertDataset(train_enc, train_labels)
     eval_dataset = BertDataset(eval_enc, eval_labels)
@@ -91,15 +102,40 @@ def main():
         num_train_epochs=args.epochs,
         per_device_train_batch_size=args.batch_size,
         load_best_model_at_end=True,
-        save_strategy='steps',
-        eval_strategy='steps',
+        save_strategy='epoch',
+        eval_strategy='epoch',
     )
+
+    def plot_metrics(metrics, output_dir):
+        epochs = range(1, len(metrics['loss']) + 1)
+
+        plt.figure(figsize=(10, 6))
+        plt.plot(epochs, metrics['loss'], label='Loss')
+        plt.plot(epochs, metrics['accuracy'], label='Accuracy')
+        plt.plot(epochs, metrics['precision'], label='Precision')
+        plt.plot(epochs, metrics['recall'], label='Recall')
+        plt.plot(epochs, metrics['f1'], label='F1 Score')
+        plt.xlabel('Epochs')
+        plt.ylabel('Metrics')
+        plt.legend()
+        plt.title('Training Metrics')
+        plt.savefig(f"{output_dir}/metrics_curve.png")
+        plt.close()
+
     def compute_metrics(pred):
         from sklearn.metrics import accuracy_score, precision_recall_fscore_support
         labels = pred.label_ids
         preds = pred.predictions.argmax(-1)
         precision, recall, f1, _ = precision_recall_fscore_support(labels, preds, average='binary')
         acc = accuracy_score(labels, preds)
+
+        # Generate confusion matrix
+        cm = confusion_matrix(labels, preds)
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+        disp.plot()
+        plt.savefig(f"{training_args.output_dir}/confusion_matrix_epoch_{trainer.state.epoch}.png")
+        plt.close()
+
         return {'accuracy': acc, 'precision': precision, 'recall': recall, 'f1': f1}
 
     trainer = Trainer(
@@ -109,6 +145,20 @@ def main():
         eval_dataset=eval_dataset,
         compute_metrics=compute_metrics,
     )
+
+    metrics = {'loss': [], 'accuracy': [], 'precision': [], 'recall': [], 'f1': []}
+
+    for epoch in range(args.epochs):
+        trainer.train()
+        eval_results = trainer.evaluate()
+
+        metrics['loss'].append(eval_results['eval_loss'])
+        metrics['accuracy'].append(eval_results['eval_accuracy'])
+        metrics['precision'].append(eval_results['eval_precision'])
+        metrics['recall'].append(eval_results['eval_recall'])
+        metrics['f1'].append(eval_results['eval_f1'])
+
+    plot_metrics(metrics, training_args.output_dir)
     trainer.train()
     trainer.save_model(args.output_dir)
 

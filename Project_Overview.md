@@ -120,6 +120,8 @@ Project/
 
 python src/supervised/train_supervised.py --if_local true --batch_size 100 --data_path ghostbuster-data --model_name bert-base-uncased --epochs 50
 
+python src/supervised/train_supervised.py --if_local true --batch_size 100 --data_path face2_zh_json --model_name bert-base-chinese --epochs 30
+
 ### 5.1 data_path
 
 - 代表使用哪个数据集，可以选择"face2_zh_json"或"ghostbuster-data"

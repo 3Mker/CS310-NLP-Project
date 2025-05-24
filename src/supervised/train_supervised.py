@@ -13,7 +13,6 @@ from src.utils.dataset import BertDataset
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
-from torch.nn.parallel import DataParallel
 
 def load_dataset(data_path, data_type):
     """Load dataset from a given path and return texts and labels."""
@@ -78,9 +77,6 @@ def main():
     else:
         raise ValueError(f"Model {args.model_name} not supported.")
 
-    # Wrap the model with DataParallel for multi-GPU training
-    model = DataParallel(model, device_ids=[0, 1, 2])
-
     # Ensure the model is moved to the appropriate device
     model = model.to('cuda')
 
@@ -111,7 +107,6 @@ def main():
         load_best_model_at_end=True,
         save_strategy='epoch',
         eval_strategy='epoch',
-        evaluation_strategy='epoch',  # 确保每个epoch都进行评估
         logging_strategy='epoch',
     )
 

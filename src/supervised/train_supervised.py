@@ -1,11 +1,11 @@
 import argparse
 import os
-# os.environ["TOKENIZERS_PARALLELISM"] = "false"
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 import json
 from src.utils.data_utils import load_chinese_qwen2_dataset, load_english_ghostbuster_dataset
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
-from transformers import BertTokenizer, BertForSequenceClassification, Trainer, TrainingArguments
+from transformers import BertTokenizer, BertForSequenceClassification, Trainer, TrainingArguments, TrainerCallback
 from transformers import AutoTokenizer, AutoModelForMaskedLM
 import torch
 from src.utils.util import preprocess_for_bert
@@ -111,7 +111,31 @@ def main():
         load_best_model_at_end=True,
         save_strategy='epoch',
         eval_strategy='epoch',
+        evaluation_strategy='epoch',  # 确保每个epoch都进行评估
+        logging_strategy='epoch',
     )
+
+    # Initialize metrics storage
+    metrics = {
+        'loss': [],
+        'accuracy': [],
+        'precision': [],
+        'recall': [],
+        'f1': []
+    }
+
+    class MetricsCallback(TrainerCallback):
+        def on_evaluate(self, args, state, control, metrics=None, **kwargs):
+            if metrics is not None:
+                nonlocal metrics_storage
+                metrics_storage['loss'].append(metrics.get('eval_loss'))
+                metrics_storage['accuracy'].append(metrics.get('eval_accuracy'))
+                metrics_storage['precision'].append(metrics.get('eval_precision'))
+                metrics_storage['recall'].append(metrics.get('eval_recall'))
+                metrics_storage['f1'].append(metrics.get('eval_f1'))
+
+    metrics_storage = metrics  # Store reference to metrics dict
+    metrics_callback = MetricsCallback()
 
     def plot_metrics(metrics, output_dir):
         epochs = range(1, len(metrics['loss']) + 1)
@@ -151,22 +175,17 @@ def main():
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
         compute_metrics=compute_metrics,
+        callbacks=[metrics_callback],  # Add the callback
     )
 
-    metrics = {'loss': [], 'accuracy': [], 'precision': [], 'recall': [], 'f1': []}
-
-    for epoch in range(args.epochs):
-        trainer.train()
-        eval_results = trainer.evaluate()
-
-        metrics['loss'].append(eval_results['eval_loss'])
-        metrics['accuracy'].append(eval_results['eval_accuracy'])
-        metrics['precision'].append(eval_results['eval_precision'])
-        metrics['recall'].append(eval_results['eval_recall'])
-        metrics['f1'].append(eval_results['eval_f1'])
-
-    plot_metrics(metrics, training_args.output_dir)
-    trainer.train()
+    # Train the model
+    train_results = trainer.train()
+    
+    # Final evaluation
+    trainer.evaluate()
+    
+    # Plot the collected metrics
+    plot_metrics(metrics_storage, training_args.output_dir)
     trainer.save_model(args.output_dir)
 
 

@@ -86,11 +86,12 @@ def main():
     model = BertForSequenceClassification.from_pretrained(model_path)
     model = model.to('cuda')
 
-    # Set up trainer
+    # Set up trainer with minimal arguments for evaluation
     training_args = TrainingArguments(
         output_dir=args.output_dir,
         per_device_eval_batch_size=args.batch_size,
-        evaluation_strategy="epoch",
+        do_train=False,
+        do_eval=True,
     )
 
     def compute_metrics(pred):

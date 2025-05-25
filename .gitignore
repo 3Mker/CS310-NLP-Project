@@ -9,9 +9,16 @@ results/
 # Ignore local_model folder
 local_model_Bert_Chinese/
 local_model_Bert_English/
+local_model_mistral/
 
-#Ignore gpt-who
+# Ignore gpt-who
 gpt-who/
 
-#Ignore FourierGPT
+# Ignore FourierGPT
 FourierGPT/
+
+# Ignore fft_output
+fft_output/
+
+# Ignore fft_results
+fft_results/

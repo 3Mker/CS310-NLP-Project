@@ -23,11 +23,11 @@
      - 调整超参数（学习率、batch size、epoch 数）。
      - 保存最优模型。
 
-   - 评估指标：准确率（Accuracy）、精确率（Precision）、召回率（Recall）、F1-score、AUROC。
+   - 评估指标：准确率（Accuracy）、精确率（Precision）、召回率（Recall）、F1-score。
 
 3. 零样本检测方法
 
-   - 选择GPT-who。
+   - 选择GPT-Who/Fourier-GPT
    - 实现或调用官方实现，对同一批文本进行零样本检测。
    - 评估同样的指标，并与监督式模型对比。
    - 复现完成后可以把GPT2模型换为别的模型
@@ -63,13 +63,19 @@ Project/
 │  ├─ reuter/
 │  ├─ wp/
 │  └─ other/
-├─ ghostbuster-data_reformed/  # 重组后的 Ghostbuster 数据集
+├─ ghostbuster-data_reformed/  # NLL Ghostbuster 数据集
 │  ├─ essay/
 │  ├─ reuter/
 │  └─ wp/
-├─ results/               # 结果文件夹
-│  ├─ supervised/         # 监督式模型结果
-│  └─ zero_shot/          # 零样本检测结果
+|─ fft_output/
+|  |─ cn/                 # 使用mistral模型生成的中文数据nll的fft转换结果
+|- fft_results/
+|  |-pwh_cls/             # 使用Fourier-GPT生成的结果
+├─ results_train/               # 结果文件夹
+│  ├─ supervised/         # 监督式模型训练结果
+│- results_test/
+|- |-supervised/          # 监督式模型OOD测试结果
+│- results_nll/           # 中文数据的nll
 ├─ src/                   # 源代码
 │  ├─ supervised/         # 监督式训练与评估脚本
 │  ├─ zero_shot/          # 零样本检测实现
